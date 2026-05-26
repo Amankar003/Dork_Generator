@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dork Optimizer — AI Lead Discovery Dashboard</title>
+    <meta name="description" content="Fresh daily source-backed B2B dork and keyword recommendations for lead discovery.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-card: #111827;
+            --bg-card-hover: #1a2236;
+            --bg-input: #1e293b;
+            --border: #1e293b;
+            --border-accent: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --accent-purple: #8b5cf6;
+            --accent-amber: #f59e0b;
+            --accent-red: #ef4444;
+            --accent-cyan: #06b6d4;
+            --gradient-1: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            --gradient-2: linear-gradient(135deg, #10b981, #06b6d4);
+            --shadow-card: 0 4px 24px rgba(0,0,0,0.3);
+            --radius: 12px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* ── Header ──────────────────────────────────── */
+        .header {
+            background: linear-gradient(180deg, #111827 0%, var(--bg-primary) 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header-sub {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        /* ── Buttons ─────────────────────────────────── */
+        .btn {
+            padding: 0.65rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .btn:hover { transform: translateY(-1px); }
+        .btn:active { transform: translateY(0); }
+        .btn-primary {
+            background: var(--gradient-1);
+            color: white;
+        }
+        .btn-primary:hover { box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4); }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border-accent);
+            color: var(--text-secondary);
+        }
+        .btn-outline:hover { border-color: var(--accent-blue); color: var(--text-primary); }
+        .btn-small {
+            padding: 0.35rem 0.8rem;
+            font-size: 0.78rem;
+            border-radius: 6px;
+        }
+        .btn-green { background: var(--accent-green); color: white; }
+        .btn-amber { background: var(--accent-amber); color: #000; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        /* ── Container ───────────────────────────────── */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem 2rem;
+        }
+
+        /* ── Stats Row ───────────────────────────────── */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.2rem;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            background: var(--gradient-2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .stat-label {
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            margin-top: 0.3rem;
+        }
+
+        /* ── Source Bar ──────────────────────────────── */
+        .source-bar {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        .source-tag {
+            font-size: 0.8rem;
+            padding: 0.3rem 0.7rem;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+        .source-tag.live { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); border: 1px solid rgba(16, 185, 129, 0.3); }
+        .source-tag.seed { background: rgba(245, 158, 11, 0.15); color: var(--accent-amber); border: 1px solid rgba(245, 158, 11, 0.3); }
+        .source-tag.zero { background: rgba(100, 116, 139, 0.15); color: var(--text-muted); border: 1px solid rgba(100, 116, 139, 0.3); }
+
+        /* ── Empty State ─────────────────────────────── */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-secondary);
+        }
+        .empty-state .icon { font-size: 3rem; margin-bottom: 1rem; }
+        .empty-state h3 { color: var(--text-primary); margin-bottom: 0.5rem; }
+
+        /* ── Recommendation Card ─────────────────────── */
+        .rec-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin-bottom: 1rem;
+            overflow: hidden;
+            transition: border-color 0.2s;
+        }
+        .rec-card:hover { border-color: var(--accent-blue); }
+
+        .rec-header {
+            padding: 1.2rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            flex-wrap: wrap;
+            cursor: pointer;
+        }
+        .rec-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .rec-meta {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 0.4rem;
+        }
+
+        /* ── Badges ──────────────────────────────────── */
+        .badge {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.2rem 0.6rem;
+            border-radius: 5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        .badge-ready { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); border: 1px solid rgba(16, 185, 129, 0.4); }
+        .badge-demo { background: rgba(100, 116, 139, 0.15); color: var(--text-muted); border: 1px solid rgba(100, 116, 139, 0.4); }
+        .badge-watchlist { background: rgba(245, 158, 11, 0.15); color: var(--accent-amber); border: 1px solid rgba(245, 158, 11, 0.4); }
+        .badge-country { background: rgba(59, 130, 246, 0.12); color: var(--accent-blue); border: 1px solid rgba(59, 130, 246, 0.3); }
+        .badge-score { background: rgba(139, 92, 246, 0.12); color: var(--accent-purple); border: 1px solid rgba(139, 92, 246, 0.3); }
+        .badge-sector { background: rgba(6, 182, 212, 0.12); color: var(--accent-cyan); border: 1px solid rgba(6, 182, 212, 0.3); }
+
+        /* ── Expandable Details ──────────────────────── */
+        .rec-details {
+            display: none;
+            padding: 0 1.5rem 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+        .rec-details.open { display: block; }
+
+        .detail-section {
+            margin-top: 1rem;
+        }
+        .detail-section h4 {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+        .detail-text {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* ── Tags / Chips ────────────────────────────── */
+        .chip-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+        }
+        .chip {
+            background: var(--bg-input);
+            border: 1px solid var(--border-accent);
+            color: var(--text-primary);
+            padding: 0.3rem 0.7rem;
+            border-radius: 6px;
+            font-size: 0.82rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .chip:hover { border-color: var(--accent-blue); background: rgba(59, 130, 246, 0.1); }
+
+        /* ── Dork Item ───────────────────────────────── */
+        .dork-item {
+            background: var(--bg-input);
+            border: 1px solid var(--border-accent);
+            border-radius: 8px;
+            padding: 0.8rem 1rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        .dork-text {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.85rem;
+            color: var(--accent-green);
+            word-break: break-all;
+            flex: 1;
+        }
+        .dork-actions {
+            display: flex;
+            gap: 0.4rem;
+            flex-shrink: 0;
+        }
+
+        /* ── Why This Dork ───────────────────────────── */
+        .why-item {
+            background: var(--bg-input);
+            border-left: 3px solid var(--accent-purple);
+            padding: 0.7rem 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 0 6px 6px 0;
+        }
+        .why-dork { font-size: 0.82rem; color: var(--accent-green); font-family: monospace; }
+        .why-reason { font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.3rem; }
+
+        /* ── Loading ─────────────────────────────────── */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 3rem;
+        }
+        .loading.show { display: block; }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent-blue);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Toast ────────────────────────────────────── */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--bg-card);
+            border: 1px solid var(--accent-green);
+            color: var(--text-primary);
+            padding: 0.8rem 1.2rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            box-shadow: var(--shadow-card);
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s;
+        }
+        .toast.show { opacity: 1; transform: translateY(0); }
+
+        /* ── Responsive ──────────────────────────────── */
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            .header { padding: 1rem; }
+            .stats-row { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <div class="header">
+        <div>
+            <h1>🔍 Dork Optimizer</h1>
+            <div class="header-sub">Fresh Source-Backed Daily B2B Lead Intelligence</div>
+        </div>
+        <div style="display: flex; gap: 0.6rem; flex-wrap: wrap;">
+            <button class="btn btn-primary" onclick="runPipeline()" id="btn-pipeline">
+                🚀 Run Daily Pipeline
+            </button>
+            <button class="btn btn-outline" onclick="loadRecommendations()">
+                🔄 Refresh
+            </button>
+        </div>
+    </div>
+
+    <div class="container">
+
+        <!-- Stats Row -->
+        <div class="stats-row" id="stats-row">
+            <div class="stat-card"><div class="stat-value" id="stat-recs">-</div><div class="stat-label">Today's Recommendations</div></div>
+            <div class="stat-card"><div class="stat-value" id="stat-sources">-</div><div class="stat-label">Sources Fetched</div></div>
+            <div class="stat-card"><div class="stat-value" id="stat-seed">-</div><div class="stat-label">Seed Data</div></div>
+            <div class="stat-card"><div class="stat-value" id="stat-dorks">-</div><div class="stat-label">Total Dorks</div></div>
+        </div>
+
+        <!-- Source Bar -->
+        <div class="source-bar" id="source-bar" style="display: none;"></div>
+
+        <!-- Loading -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="color: var(--text-secondary);">Running pipeline... Fetching sources, analyzing trends, generating dorks...</p>
+        </div>
+
+        <!-- Recommendations List -->
+        <div id="recommendations-list"></div>
+
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const API_BASE = window.location.origin;
+
+        // ── Load on page open ──────────────────────────
+        document.addEventListener('DOMContentLoaded', loadRecommendations);
+
+        // ── Filter India Recommendations ──────────────
+        function filterIndiaRecommendations(recs) {
+            const blockedCities = ["india", "delhi", "new delhi", "mumbai", "bangalore", "bengaluru", "noida", "greater noida", "gurgaon", "gurugram", "pune", "hyderabad", "chennai", "kolkata", "ahmedabad", "jaipur", "lucknow", "surat", "kanpur", "nagpur", "indore", "bhopal", "patna", "vadodara", "ludhiana", "agra", "nashik", "faridabad", "meerut", "rajkot", "varanasi"];
+            const blockedCountries = ["india", "in", "bharat"];
+
+            return (recs || []).filter(rec => {
+                const country = (rec.country || "").trim().toLowerCase();
+                const region = (rec.region || "").trim().toLowerCase();
+                const trendName = (rec.trend_name || "").toLowerCase();
+                
+                if (blockedCountries.includes(country)) return false;
+                if (blockedCities.includes(region) || blockedCities.some(city => region.includes(city))) return false;
+                if (trendName.includes("india") || trendName.includes("indian")) return false;
+                
+                if (rec.dorks && Array.isArray(rec.dorks)) {
+                    // Only filter dorks targeting Indian domains (site:.in)
+                    // Do NOT filter "-india" which is a negative exclusion operator
+                    rec.dorks = rec.dorks.filter(d => !d.toLowerCase().includes("site:.in"));
+                }
+                if (rec.why_this_dork && Array.isArray(rec.why_this_dork)) {
+                    rec.why_this_dork = rec.why_this_dork.filter(w => w && w.dork && !w.dork.toLowerCase().includes("site:.in"));
+                }
+                
+                // Temporarily disabled: do not remove recommendation even if dorks are empty.
+                // if (!rec.dorks || rec.dorks.length === 0) return false;
+                
+                return true;
+            });
+        }
+
+        // ── Load today's recommendations ───────────────
+        async function loadRecommendations() {
+            try {
+                const res = await fetch(`${API_BASE}/today-recommendations`);
+                const data = await res.json();
+                
+                if (data.recommendations) {
+                    data.recommendations = filterIndiaRecommendations(data.recommendations);
+                }
+                
+                renderStats(data);
+                renderSourceBar(data.source_summary);
+                renderRecommendations(data.recommendations);
+            } catch (e) {
+                console.error('Failed to load:', e);
+                document.getElementById('recommendations-list').innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">⚠️</div>
+                        <h3>Cannot connect to API</h3>
+                        <p>Make sure the backend is running on ${API_BASE}</p>
+                    </div>`;
+            }
+        }
+
+        // ── Run Pipeline ───────────────────────────────
+        async function runPipeline() {
+            const btn = document.getElementById('btn-pipeline');
+            const loading = document.getElementById('loading');
+            btn.disabled = true;
+            btn.textContent = '⏳ Running...';
+            loading.classList.add('show');
+            document.getElementById('recommendations-list').innerHTML = '';
+
+            try {
+                const res = await fetch(`${API_BASE}/run-daily-pipeline`, { method: 'POST' });
+                const data = await res.json();
+
+                if (data.status === 'success') {
+                    if (data.recommendations) {
+                        data.recommendations = filterIndiaRecommendations(data.recommendations);
+                    }
+                    showToast(`✅ Pipeline complete: ${data.recommendations ? data.recommendations.length : 0} recommendations`);
+                    // Fetch latest from DB to ensure it matches DB state
+                    await loadRecommendations();
+                } else {
+                    showToast(`❌ Pipeline failed: ${data.detail || 'Unknown error'}`);
+                }
+            } catch (e) {
+                showToast(`❌ Error: ${e.message}`);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🚀 Run Daily Pipeline';
+                loading.classList.remove('show');
+            }
+        }
+
+        // ── Render Stats ───────────────────────────────
+        function renderStats(data) {
+            const recs = data.recommendations || [];
+            const summary = data.source_summary || data.source_stats || {};
+            document.getElementById('stat-recs').textContent = recs.length;
+            document.getElementById('stat-sources').textContent = summary.total || summary.total_today || 0;
+            document.getElementById('stat-seed').textContent = (summary.used_seed || summary.seed_used) ? 'Yes' : 'No';
+
+            let totalDorks = 0;
+            recs.forEach(r => { totalDorks += (r.dorks || []).length; });
+            document.getElementById('stat-dorks').textContent = totalDorks;
+        }
+
+        // ── Render Source Bar ──────────────────────────
+        function renderSourceBar(summary) {
+            const bar = document.getElementById('source-bar');
+            if (!summary) { bar.style.display = 'none'; return; }
+            bar.style.display = 'flex';
+
+            const bySource = summary.by_source || {};
+            let html = '<strong style="color: var(--text-secondary); font-size: 0.82rem;">📡 Sources:</strong>';
+
+            // If we have by_source from recommendation endpoint
+            if (Object.keys(bySource).length > 0) {
+                for (const [name, count] of Object.entries(bySource)) {
+                    const cls = name.toLowerCase() === 'seed' ? 'seed' : (count > 0 ? 'live' : 'zero');
+                    html += `<span class="source-tag ${cls}">${name}: ${count}</span>`;
+                }
+            }
+
+            // If we have individual stats from pipeline
+            if (summary.gdelt !== undefined) {
+                const sources = ['gdelt', 'news', 'rss', 'pytrends', 'seed'];
+                sources.forEach(s => {
+                    const count = summary[s] || 0;
+                    const cls = s === 'seed' ? 'seed' : (count > 0 ? 'live' : 'zero');
+                    if (count > 0 || s !== 'seed') {
+                        html += `<span class="source-tag ${cls}">${s}: ${count}</span>`;
+                    }
+                });
+            }
+
+            bar.innerHTML = html;
+        }
+
+        // ── Render Recommendations ─────────────────────
+        function renderRecommendations(recs) {
+            const container = document.getElementById('recommendations-list');
+
+            if (!recs || recs.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">📭</div>
+                        <h3>Live data fetched, but no foreign market opportunities found today.</h3>
+                        <p>Run the daily pipeline to fetch live signals and generate recommendations.</p>
+                    </div>`;
+                return;
+            }
+
+            let html = `<h3 style="margin-bottom: 1rem; color: var(--text-primary);">📡 ${recs.length} Fresh Daily Recommendations</h3>`;
+
+            recs.forEach((rec, idx) => {
+                const status = rec.status || 'ready';
+                const statusBadge = status === 'ready'
+                    ? '<span class="badge badge-ready">✅ Ready</span>'
+                    : status === 'demo'
+                    ? '<span class="badge badge-demo">🎭 Demo</span>'
+                    : '<span class="badge badge-watchlist">👁️ Watchlist</span>';
+
+                const keywords = rec.keywords || [];
+                const dorks = rec.dorks || [];
+                const whyDork = rec.why_this_dork || [];
+                const urls = rec.urls || [];
+
+                const countryEmojis = { 'UAE': '🇦🇪', 'India': '🇮🇳', 'Saudi Arabia': '🇸🇦', 'UK': '🇬🇧', 'USA': '🇺🇸', 'Australia': '🇦🇺', 'Canada': '🇨🇦', 'Singapore': '🇸🇬', 'Qatar': '🇶🇦' };
+                const flag = countryEmojis[rec.country] || '🌍';
+
+                html += `
+                <div class="rec-card">
+                    <div class="rec-header" onclick="toggleDetails(${idx})">
+                        <div>
+                            <div class="rec-title">${rec.trend_name || 'Untitled'}</div>
+                            <div class="rec-meta">
+                                <span class="badge badge-country">${flag} ${rec.country || ''}</span>
+                                ${rec.region ? `<span class="badge badge-country">📍 ${rec.region}</span>` : ''}
+                                <span class="badge badge-sector">${rec.sector || ''}</span>
+                                <span class="badge badge-score">🎯 Score: ${rec.opportunity_score || 0}%</span>
+                                ${statusBadge}
+                            </div>
+                        </div>
+                        <div style="color: var(--text-muted); font-size: 0.82rem;">
+                            🔧 ${rec.recommended_service || ''}<br>
+                            ${dorks.length} dorks · ${keywords.length} keywords
+                        </div>
+                    </div>
+
+                    <div class="rec-details" id="details-${idx}">
+                        <!-- Service & Reasoning -->
+                        <div class="detail-section">
+                            <h4>🔧 Recommended Service</h4>
+                            <div class="detail-text">${rec.recommended_service || '-'}</div>
+                        </div>
+
+                        ${rec.domain ? `<div class="detail-section"><h4>🌐 Domain</h4><div class="detail-text">${rec.domain}</div></div>` : ''}
+
+                        <!-- Keywords -->
+                        ${keywords.length > 0 ? `
+                        <div class="detail-section">
+                            <h4>🔑 Keywords</h4>
+                            <div class="chip-list">
+                                ${keywords.map(k => `<span class="chip" data-kw="${escapeHtml(k)}" onclick="copyText(this.getAttribute('data-kw'))">${escapeHtml(k)}</span>`).join('')}
+                            </div>
+                        </div>` : ''}
+
+                        <!-- Dorks -->
+                        ${dorks.length > 0 ? `
+                        <div class="detail-section">
+                            <h4>🔍 Generated Dorks</h4>
+                            ${dorks.map(d => `
+                            <div class="dork-item">
+                                <div class="dork-text">${escapeHtml(d)}</div>
+                                <div class="dork-actions">
+                                    <button class="btn btn-outline btn-small" data-dork="${escapeHtml(d)}" onclick="copyText(this.getAttribute('data-dork'))">📋 Copy</button>
+                                    <button class="btn btn-green btn-small" data-dork="${escapeHtml(d)}" onclick="useDork(this.getAttribute('data-dork'), '${escapeJs(rec.country || '').replace(/\"/g, '&quot;')}', '${escapeJs(rec.region || '').replace(/\"/g, '&quot;')}', '${escapeJs(rec.sector || '').replace(/\"/g, '&quot;')}')">✅ Use</button>
+                                </div>
+                            </div>`).join('')}
+                        </div>` : ''}
+
+                        <!-- URLs -->
+                        ${urls.length > 0 ? `
+                        <div class="detail-section">
+                            <h4>🔗 Target URLs</h4>
+                            ${urls.map(u => `<div style="margin-bottom: 0.3rem;"><a href="${escapeHtml(u)}" target="_blank" style="color: var(--accent-blue); font-size: 0.85rem; text-decoration: none;">${escapeHtml(u)}</a></div>`).join('')}
+                        </div>` : ''}
+
+                        <!-- Why This Dork -->
+                        ${whyDork.length > 0 ? `
+                        <div class="detail-section">
+                            <h4>💡 Why These Dorks</h4>
+                            ${whyDork.map(w => `
+                            <div class="why-item">
+                                <div class="why-dork">${escapeHtml(w.dork || '')}</div>
+                                <div class="why-reason">${escapeHtml(w.reason || '')}</div>
+                            </div>`).join('')}
+                        </div>` : ''}
+                    </div>
+                </div>`;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // ── Toggle card details ────────────────────────
+        function toggleDetails(idx) {
+            const el = document.getElementById(`details-${idx}`);
+            el.classList.toggle('open');
+        }
+
+        // ── Copy to clipboard ──────────────────────────
+        function copyText(text) {
+            navigator.clipboard.writeText(text).then(() => showToast('📋 Copied to clipboard'));
+        }
+
+        // ── Use Dork (mark as used) ────────────────────
+        async function useDork(dorkText, country, region, sector) {
+            try {
+                const res = await fetch(`${API_BASE}/dorks/mark-used`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ dork_text: dorkText, country, region, sector }),
+                });
+                const data = await res.json();
+                showToast('✅ Dork marked as used');
+            } catch (e) {
+                showToast('❌ Failed to mark dork');
+            }
+        }
+
+        // ── Toast notification ─────────────────────────
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // ── Escape helpers ─────────────────────────────
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+        function escapeJs(str) {
+            if (!str) return '';
+            return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/`/g, '\\`');
+        }
+    </script>
+</body>
+</html>

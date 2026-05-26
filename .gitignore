@@ -1,0 +1,42 @@
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Database
+data/
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+logs/
+*.log
+
+# VS Code / IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# MacOS
+.DS_Store
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Tests / coverage
+.coverage
+htmlcov/
+.pytest_cache/
